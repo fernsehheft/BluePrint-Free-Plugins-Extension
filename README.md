@@ -1,25 +1,25 @@
 # Modrinth Browser Extension for Pterodactyl
 
-An open-source **Blueprint extension** for Pterodactyl that adds a **Plugins tab** to your server panel, allowing you to browse, search, and install plugins directly from **Modrinth** — without leaving the dashboard.
+This is an open-source **Blueprint extension** for Pterodactyl that adds a handy **Plugins** tab right inside your server panel. With it, you can browse, search, and install plugins straight from **Modrinth** — no need to leave the dashboard.
 
-No manual downloads. No messy uploads. Just click, install, and restart.
+No more downloading files by hand or uploading things manually. Just pick what you need, hit install, and you’re set.
 
 ---
 
 ## Features
 
-* 📚 Browse plugins from Modrinth directly inside your Pterodactyl Panel
-* 🔍 Search and filter by project, version, and loader (later on also Bukkit, Spigot, CurseForge, etc.)
-* ⬇️ One-click download & install
-* 🔒 Permission-aware backend handling
-* 🎨 Modern React-based UI
-* 🆓 Free and open source
+* 📚 Browse Modrinth plugins directly from your Pterodactyl Panel.
+* 🔍 Search and filter by project name, Minecraft version, and loader (support for more like Bukkit, Spigot, CurseForge coming soon).
+* ⬇️ One-click download & install.
+* 🔒 Backend checks server permissions before installing.
+* 🎨 Modern React-based UI for a smooth experience.
+* 🆓 100% free and open source.
 
 ---
 
 ## Folder Structure
 
-This extension follows the standard Blueprint extension layout:
+The extension uses the usual Blueprint project structure:
 
 ```
 ModrinthBrowser/
@@ -40,66 +40,56 @@ ModrinthBrowser/
     └── server.php
 ```
 
-### What lives where?
+### Quick Overview:
 
-* `conf.yml` → Extension metadata & configuration
-* `PluginController.php` → Download & validation logic
-* `ModrinthBrowserContainer.tsx` → Frontend UI
-* `server.php` → Route definitions
+* `conf.yml`: Extension metadata & config
+* `PluginController.php`: Handles download & validation
+* `ModrinthBrowserContainer.tsx`: UI code (React)
+* `server.php`: Blueprint routes
 
 ---
 
 ## Requirements
 
-Make sure your system meets these requirements:
+To get this extension running, you'll need:
 
-* Pterodactyl Panel (Blueprint compatible)
+* The Pterodactyl Panel with Blueprint support
 * Blueprint installed
-* PHP 8+
+* PHP 8 or newer
 * Outbound network access to:
-
   * `api.modrinth.com`
   * `cdn.modrinth.com`
 
 ---
 
-## Installation (Recommended Method)
+## Installation (Recommended)
 
-This is the official and supported installation method using Blueprint packages.
+The installation works best with the Blueprint package manager.
 
 ---
 
 ### 1️⃣ Download the Latest LTS Release
 
-1. Open the GitHub repository
-2. Go to **Releases**
-3. Download the latest **LTS** file:
-
-```
-modrinthbrowser.blueprint
-```
-
-If the filename contains a version number, you may rename it to the above for simplicity.
+1. Go to this repo’s GitHub Releases page.
+2. Download the most recent **LTS** release:
+    ```
+    modrinthbrowser.blueprint
+    ```
+    If the download has a version in the filename, you can rename it to the above if you prefer.
 
 ---
 
 ### 2️⃣ Upload to Your Pterodactyl Directory
 
-Upload the `.blueprint` file to your Pterodactyl root directory:
+Put the `modrinthbrowser.blueprint` file in your Pterodactyl root folder:
 
 ```
 /var/www/pterodactyl
 ```
 
-You can use:
+You can upload using SFTP, SCP, your file manager, or (less ideally) FTP.
 
-* SFTP
-* SCP
-* File manager
-* FTP (not recommended)
-
-Example (via SCP):
-
+Example:
 ```
 scp modrinthbrowser.blueprint user@server:/var/www/pterodactyl/
 ```
@@ -108,153 +98,132 @@ scp modrinthbrowser.blueprint user@server:/var/www/pterodactyl/
 
 ### 3️⃣ Install the Extension
 
-SSH into your server and run:
-
-```
-cd /var/www/pterodactyl
-blueprint -i modrinthbrowser.blueprint
-```
-
-After installation, clear cache and rebuild assets if required:
-
-```
-php artisan optimize:clear
-php artisan view:clear
-```
-
-Then restart your panel services if needed.
+1. SSH into your server.
+2. Run:
+    ```
+    cd /var/www/pterodactyl
+    blueprint -i modrinthbrowser.blueprint
+    ```
+3. After installing, clear caches and rebuild assets if necessary:
+    ```
+    php artisan optimize:clear
+    php artisan view:clear
+    ```
+4. If your setup requires it, restart your panel services.
 
 ---
 
-## Uninstallation
+## Uninstalling
 
 To remove the extension, run:
-
 ```
 cd /var/www/pterodactyl
 blueprint -remove modrinthbrowser.blueprint
 ```
 
-Then clear the cache again:
-
+Don't forget to clear the cache afterwards:
 ```
 php artisan optimize:clear
 ```
 
 ---
 
-## Updating the Extension
+## Updating
 
-Updating is done by reinstalling the newest release.
-
----
+Just uninstall the old version and install the new one. Here’s a quick process:
 
 ### Recommended Update Process
 
-1. Remove the old version
-
-```
-blueprint -remove modrinthbrowser.blueprint
-```
-
-2. Download the latest LTS release from GitHub
-
-3. Upload the new `.blueprint` file to `/var/www/pterodactyl`
-
-4. Install again
-
-```
-blueprint -i modrinthbrowser.blueprint
-```
-
-5. Clear cache
-
-```
-php artisan optimize:clear
-```
-
-6. Restart services
+1. Remove the old version:
+    ```
+    blueprint -remove modrinthbrowser.blueprint
+    ```
+2. Download the latest LTS release from GitHub.
+3. Upload the new file to `/var/www/pterodactyl`.
+4. Install again:
+    ```
+    blueprint -i modrinthbrowser.blueprint
+    ```
+5. Clear cache:
+    ```
+    php artisan optimize:clear
+    ```
+6. Restart your panel services if needed.
 
 ---
 
-## Integration Details
+## How it Works
 
 ### Frontend
 
-The interface is built with React and Tailwind CSS and lives in:
-
+The panel interface lives here:
 ```
 resources/scripts/components/server/modrinth/ModrinthBrowserContainer.tsx
 ```
-
-It communicates with the Modrinth API and the backend controller.
+It’s all React + Tailwind, talking to the backend and Modrinth’s API.
 
 ### Backend
 
+This is the controller doing the heavy lifting:
 ```
 app/Http/Controllers/Extensions/ModrinthBrowser/PluginController.php
 ```
-
-Responsibilities:
-
-* Validates download requests
-* Verifies permissions
-* Streams files securely
-* Places plugins in the correct server directory
+It:
+* Checks and validates requests
+* Verifies your user/server has the right permissions
+* Streams plugin files securely
+* Drops them in the correct server folder
 
 ### Security
 
-* Checks `file.create` permission
-* Validates project and version IDs
-* Prevents path traversal
-* Uses Pterodactyl internal storage APIs
+* Enforces `file.create` permission checks.
+* Validates all project/version IDs.
+* Prevents directory traversal attacks.
+* Uses Pterodactyl’s built-in storage APIs.
 
 ---
 
-## 🛠️ Development & Local Testing
+## 🛠️ Developing & Local Testing
 
-For development installs, you may place the extension inside Blueprint’s development directory:
+To run locally, you can place the extension here:
 
 ```
 .blueprint/extensions/ModrinthBrowser
 ```
 
-Then run:
+Then use:
 
 ```
 blueprint -i modrinthbrowser
 ```
 
-This allows hot reloading during development.
+You’ll get hot reloads for most changes.
 
 ---
 
 ## Contributing
 
-Contributions are welcome.
+Pull requests, bug reports, and feature ideas are all welcome! Contributions of any size help keep this project healthy.
 
-You can help by:
-
+Typical ways to help:
 * Reporting bugs
-* Improving documentation
+* Fixing typos or improving docs
 * Submitting pull requests
-* Adding features
+* Suggesting new features
 
-Please follow standard GitHub contribution workflows.
+Please follow the usual GitHub process and check for open issues first.
 
 ---
 
 ## License
 
-This project is released under an open-source license.
-
-See the `LICENSE` file for details.
+Open source, of course! See the `LICENSE` file for specifics.
 
 ---
 
 ## Acknowledgements
 
-* Modrinth API
-* Pterodactyl Team
-* Blueprint Framework Developers
-* Community Contributors
+* Modrinth API & team
+* The Pterodactyl contributors
+* Blueprint Framework maintainers
+* Everyone else who’s pitched in along the way!
