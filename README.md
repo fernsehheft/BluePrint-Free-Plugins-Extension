@@ -28,7 +28,7 @@ ModrinthBrowser/
 ## Installation
 
 1. **Prerequisites**: Ensure you have [Blueprint](https://blueprint.zip) installed on your Pterodactyl instance.
-2. **Upload**: Upload the `ModrinthBrowser` folder to your Pterodactyl root directory (or extensions directory if using a specific manager, but typically Blueprint extensions are installed via command).
+2. **Upload**: Upload the `ModrinthBrowser` folder or Download the `modrinthbrowser.blueprint` to your Pterodactyl root directory (or extensions directory if using a specific manager, but typically Blueprint extensions are installed via command).
    - *Note*: If manually placing files, ensure they merge with your Pterodactyl structure. However, proper Blueprint installation usually involves using the `blueprint -i` command if packaged, or placing in a staging area.
    - **Recommended**: Place this folder in your Pterodactyl root extensions folder (if applicable) or simply merge the `app`, `resources` folders into your Pterodactyl root if installing manually (NOT RECOMMENDED with Blueprint).
    
