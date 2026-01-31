@@ -10,7 +10,7 @@
                     class="form-control" 
                     id="apiToken" 
                     name="apiToken" 
-                    placeholder="Enter your Modrinth API token…" 
+                    placeholder="Enter your Curseforge API token…" 
                     style="margin-top: 0.5rem;" 
                     disabled
                 >
