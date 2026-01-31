@@ -4,8 +4,8 @@ info:
   description: "Browse and download Modrinth plugins directly from the server panel."
   version: "1.0.0"
   target: "beta-2026-01"
-  author: "Antigravity"
-  icon: 'resources/icon.jpg'
+  author: "fernsehheft"
+  icon: 'resources/icon.png'
   website: ''
 
 admin:
