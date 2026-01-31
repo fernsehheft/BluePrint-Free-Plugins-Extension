@@ -1,0 +1,3 @@
+Navigation:
+  Routes:
+    - { Name: 'Plugins', Path: '/plugins', Type: 'server', Component: 'server/modrinth/ModrinthBrowserContainer', AdminOnly: 'false' }

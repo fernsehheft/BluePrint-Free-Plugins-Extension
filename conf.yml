@@ -1,0 +1,36 @@
+info:
+  name: "Modrinth Browser"
+  identifier: "modrinthbrowser"
+  description: "Browse and download Modrinth plugins directly from the server panel."
+  version: "1.0.0"
+  target: "beta-2026-01"
+  author: "Antigravity"
+  icon: ''
+  website: ''
+
+admin:
+  view: 'resources/views/view.blade.php'
+  controller: ''
+  css: ''
+  wrapper: ''
+
+dashboard:
+  css: ''
+  wrapper: ''
+  components: 'resources/scripts/components'
+
+data:
+  directory: ''
+  public: ''
+  console: ''
+
+requests:
+  views: ''
+  app: 'app'
+  routers:
+    application: ''
+    client: ''
+    web: 'routes/web.php'
+
+database:
+  migrations: ''
