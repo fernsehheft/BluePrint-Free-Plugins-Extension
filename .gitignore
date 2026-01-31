@@ -1,1 +1,27 @@
+# Ignore commit message files
 commit.md
+
+# Ignore common system files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE/editor folders
+.vscode/
+.idea/
+
+# Ignore OS generated files
+*.swp
+*.swo
+
+# Ignore logs and build/artifact files
+*.log
+/dist/
+/build/
+/node_modules/
+
+# Ignore dependency directories
+/vendor/
+
+/.env
+/.env.*
+.env.*.local
