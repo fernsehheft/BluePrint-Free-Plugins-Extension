@@ -1,16 +1,14 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { ServerContext } from '@/state/server';
 import http from '@/api/http';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faSlidersH, faDownload, faHeart, faClock, faHdd, faCloudDownloadAlt, faSpinner, faCheck, faExclamationCircle, faTimes, faCube } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faSlidersH, faDownload, faHeart, faClock, faHdd, faCloudDownloadAlt, faSpinner, faCheck, faExclamationCircle, faTimes, faCube, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import debounce from 'lodash-es/debounce';
 import tw from 'twin.macro';
 import styled from 'styled-components/macro';
 
-// Platform type
 type Platform = 'modrinth' | 'spigotmc';
 
-// Styled Components to match the "Glassmorphism" look provided
 const GlassPanel = styled.div`
     ${tw`rounded-2xl p-6 mb-8`};
     background: rgba(30, 41, 59, 0.4);
@@ -51,6 +49,94 @@ const PlatformTab = styled.button<{ active: boolean; color: string }>`
         background: ${props => props.active ? props.color : 'rgba(30, 41, 59, 0.5)'};
     }
 `;
+
+const DropdownWrapper = styled.div`
+    ${tw`relative w-full`};
+`;
+
+const DropdownButton = styled.button`
+    ${tw`w-full bg-neutral-900 border border-neutral-700 text-neutral-300 text-sm rounded-lg p-2.5 outline-none flex items-center justify-between transition-all duration-200`};
+    background-color: rgba(15, 23, 42, 0.5);
+    &:focus {
+        border-color: rgb(99, 102, 241);
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+`;
+
+const DropdownContent = styled.div`
+    ${tw`absolute z-50 w-full mt-2 rounded-lg overflow-hidden border border-white/10 shadow-2xl`};
+    background: rgba(17, 24, 39, 0.95);
+    backdrop-filter: blur(12px);
+    max-height: 250px;
+    overflow-y: auto;
+    
+    &::-webkit-scrollbar {
+        width: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+    }
+`;
+
+const DropdownItem = styled.div<{ active: boolean }>`
+    ${tw`px-4 py-2.5 text-sm cursor-pointer transition-colors duration-150`};
+    background: ${props => props.active ? 'rgba(99, 102, 241, 0.2)' : 'transparent'};
+    color: ${props => props.active ? 'white' : 'rgb(156, 163, 175)'};
+    &:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+    }
+`;
+
+interface DropdownOption {
+    id: string;
+    name: string;
+}
+
+const PremiumDropdown = ({ value, options, onChange, placeholder = 'Select...' }: { value: string; options: DropdownOption[]; onChange: (val: string) => void; placeholder?: string }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const activeOption = useMemo(() => options.find(o => o.id === value), [value, options]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    return (
+        <DropdownWrapper ref={dropdownRef} style={{ zIndex: isOpen ? 100 : 1 }}>
+            <DropdownButton type="button" onClick={() => setIsOpen(!isOpen)}>
+                <span className={activeOption ? 'text-white' : 'text-neutral-500'}>
+                    {activeOption ? activeOption.name : placeholder}
+                </span>
+                <FontAwesomeIcon icon={faChevronDown} className={`text-xs transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+            </DropdownButton>
+            {isOpen && (
+                <DropdownContent className="animate-fade-in-down">
+                    {options.map(option => (
+                        <DropdownItem
+                            key={option.id}
+                            active={option.id === value}
+                            onClick={() => {
+                                onChange(option.id);
+                                setIsOpen(false);
+                            }}
+                        >
+                            {option.name}
+                        </DropdownItem>
+                    ))}
+                </DropdownContent>
+            )}
+        </DropdownWrapper>
+    );
+};
 
 const modrinthCategories = [
     { id: 'adventure', name: 'Adventure' },
@@ -96,7 +182,6 @@ const loadersList = [
     'paper', 'purpur', 'spigot', 'bukkit', 'folia', 'velocity', 'waterfall', 'bungeecord'
 ];
 
-// Unified Plugin Interface
 interface UnifiedPlugin {
     id: string;
     title: string;
@@ -109,7 +194,6 @@ interface UnifiedPlugin {
     platform: Platform;
 }
 
-// Modrinth Version interface
 interface ModrinthVersion {
     id: string;
     name: string;
@@ -126,14 +210,12 @@ interface ModrinthVersion {
     loaders: string[];
 }
 
-// Spigot Version interface
 interface SpigotVersion {
     id: number;
     name: string;
     releaseDate: number;
 }
 
-// Unified Version interface
 interface UnifiedVersion {
     id: string;
     name: string;
@@ -161,17 +243,14 @@ export default () => {
     const [totalHits, setTotalHits] = useState(0);
     const [page, setPage] = useState(0);
 
-    // Modal State
     const [selectedPlugin, setSelectedPlugin] = useState<UnifiedPlugin | null>(null);
     const [versions, setVersions] = useState<UnifiedVersion[]>([]);
     const [versionFilters, setVersionFilters] = useState({ gameVersion: '', loader: '', type: '' });
     const [loadingVersions, setLoadingVersions] = useState(false);
 
-    // Derived state for version filtering
     const [availableGameVersions, setAvailableGameVersions] = useState<string[]>([]);
     const [availableLoaders, setAvailableLoaders] = useState<string[]>([]);
 
-    // ===== Modrinth API =====
     const searchModrinth = async (q: string, offset: number): Promise<{ plugins: UnifiedPlugin[], total: number }> => {
         const facets = [['project_type:plugin']];
         if (filters.category) facets.push([`categories:${filters.category}`]);
@@ -204,7 +283,6 @@ export default () => {
         return { plugins, total: data.total_hits };
     };
 
-    // ===== SpigotMC (Spiget) API =====
     const searchSpigot = async (q: string, offset: number): Promise<{ plugins: UnifiedPlugin[], total: number }> => {
         const pageNum = Math.floor(offset / 12) + 1;
 
@@ -212,7 +290,6 @@ export default () => {
         if (q) {
             url = `https://api.spiget.org/v2/search/resources/${encodeURIComponent(q)}?field=name&size=12&page=${pageNum}&sort=-downloads`;
         } else {
-            // Browse all resources sorted by downloads
             let sortParam = '-downloads';
             if (filters.sort === 'newest') sortParam = '-releaseDate';
             if (filters.sort === 'updated') sortParam = '-updateDate';
@@ -226,7 +303,6 @@ export default () => {
         const res = await fetch(url);
         const data = await res.json();
 
-        // Spiget doesn't return total count in search, estimate high
         const plugins: UnifiedPlugin[] = (Array.isArray(data) ? data : []).map((p: any) => ({
             id: p.id.toString(),
             title: p.name,
@@ -239,10 +315,9 @@ export default () => {
             platform: 'spigotmc' as Platform,
         }));
 
-        return { plugins, total: 1000 }; // Spiget doesn't provide total
+        return { plugins, total: 1000 };
     };
 
-    // ===== Unified Search =====
     const searchPlugins = useCallback(async (q: string, offset: number) => {
         setLoading(true);
         try {
@@ -262,7 +337,6 @@ export default () => {
         }
     }, [platform, filters]);
 
-    // Debounced Search
     const debouncedSearch = useCallback(debounce((q) => {
         setPage(0);
         searchPlugins(q, 0);
@@ -278,14 +352,12 @@ export default () => {
         }
     }, [page]);
 
-    // Reset filters when platform changes
     useEffect(() => {
         setFilters({ category: '', loader: '', sort: 'relevance' });
         setQuery('');
         setPage(0);
     }, [platform]);
 
-    // ===== Load Versions =====
     const loadVersions = async (plugin: UnifiedPlugin) => {
         setSelectedPlugin(plugin);
         setLoadingVersions(true);
@@ -299,7 +371,6 @@ export default () => {
                 setAvailableGameVersions([...new Set(data.flatMap(v => v.game_versions))].sort().reverse());
                 setAvailableLoaders([...new Set(data.flatMap(v => v.loaders))]);
             } else {
-                // SpigotMC - get versions and create download link
                 const res = await fetch(`https://api.spiget.org/v2/resources/${plugin.id}/versions?size=20&sort=-releaseDate`);
                 const data: SpigotVersion[] = await res.json();
 
@@ -329,6 +400,14 @@ export default () => {
             setLoadingVersions(false);
         }
     };
+
+    const sortOptions = [
+        { id: 'relevance', name: 'Relevance' },
+        { id: 'downloads', name: 'Downloads' },
+        ...(platform === 'modrinth' ? [{ id: 'follows', name: 'Popularity' }] : []),
+        { id: 'newest', name: 'Newest' },
+        { id: 'updated', name: 'Updated' },
+    ];
 
     const downloadVersion = async (version: UnifiedVersion, file: UnifiedVersion['files'][0], btn: HTMLButtonElement) => {
         if (!server) return;
@@ -376,7 +455,7 @@ export default () => {
     return (
         <div className="min-h-screen text-neutral-200 font-sans" style={{ background: '#0f1016' }}>
             <div className="max-w-7xl mx-auto p-4 md:p-8">
-                {/* Header */}
+                {/*Header*/}
                 <GlassPanel className="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
@@ -439,33 +518,33 @@ export default () => {
 
                 {/* Filters */}
                 {showFilters && (
-                    <GlassPanel className="animate-fade-in-down">
+                    <GlassPanel className="animate-fade-in-down relative z-20">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <label className="block mb-2 text-sm font-medium text-neutral-300">Category</label>
-                                <CustomSelect value={filters.category} onChange={e => setFilters({ ...filters, category: e.target.value })}>
-                                    <option value="">All Categories</option>
-                                    {currentCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                </CustomSelect>
+                                <PremiumDropdown
+                                    value={filters.category}
+                                    options={[{ id: '', name: 'All Categories' }, ...currentCategories]}
+                                    onChange={val => setFilters({ ...filters, category: val })}
+                                />
                             </div>
                             {platform === 'modrinth' && (
                                 <div>
                                     <label className="block mb-2 text-sm font-medium text-neutral-300">Loader</label>
-                                    <CustomSelect value={filters.loader} onChange={e => setFilters({ ...filters, loader: e.target.value })}>
-                                        <option value="">All Loaders</option>
-                                        {loadersList.map(l => <option key={l} value={l}>{l}</option>)}
-                                    </CustomSelect>
+                                    <PremiumDropdown
+                                        value={filters.loader}
+                                        options={[{ id: '', name: 'All Loaders' }, ...loadersList.map(l => ({ id: l, name: l }))]}
+                                        onChange={val => setFilters({ ...filters, loader: val })}
+                                    />
                                 </div>
                             )}
                             <div>
                                 <label className="block mb-2 text-sm font-medium text-neutral-300">Sort By</label>
-                                <CustomSelect value={filters.sort} onChange={e => setFilters({ ...filters, sort: e.target.value })}>
-                                    <option value="relevance">Relevance</option>
-                                    <option value="downloads">Downloads</option>
-                                    {platform === 'modrinth' && <option value="follows">Popularity</option>}
-                                    <option value="newest">Newest</option>
-                                    <option value="updated">Updated</option>
-                                </CustomSelect>
+                                <PremiumDropdown
+                                    value={filters.sort}
+                                    options={sortOptions}
+                                    onChange={val => setFilters({ ...filters, sort: val })}
+                                />
                             </div>
                         </div>
                     </GlassPanel>
@@ -538,30 +617,36 @@ export default () => {
                             </div>
 
                             {selectedPlugin.platform === 'modrinth' && (
-                                <div className="p-6 space-y-4 bg-neutral-900/30">
+                                <div className="p-6 space-y-4 bg-neutral-900/30 relative z-10">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
                                             <label className="block mb-2 text-sm font-medium text-neutral-300">Game Version</label>
-                                            <CustomSelect value={versionFilters.gameVersion} onChange={e => setVersionFilters({ ...versionFilters, gameVersion: e.target.value })}>
-                                                <option value="">All Versions</option>
-                                                {availableGameVersions.map(v => <option key={v} value={v}>{v}</option>)}
-                                            </CustomSelect>
+                                            <PremiumDropdown
+                                                value={versionFilters.gameVersion}
+                                                options={[{ id: '', name: 'All Versions' }, ...availableGameVersions.map(v => ({ id: v, name: v }))]}
+                                                onChange={val => setVersionFilters({ ...versionFilters, gameVersion: val })}
+                                            />
                                         </div>
                                         <div>
                                             <label className="block mb-2 text-sm font-medium text-neutral-300">Loader</label>
-                                            <CustomSelect value={versionFilters.loader} onChange={e => setVersionFilters({ ...versionFilters, loader: e.target.value })}>
-                                                <option value="">All Loaders</option>
-                                                {availableLoaders.map(v => <option key={v} value={v}>{v}</option>)}
-                                            </CustomSelect>
+                                            <PremiumDropdown
+                                                value={versionFilters.loader}
+                                                options={[{ id: '', name: 'All Loaders' }, ...availableLoaders.map(v => ({ id: v, name: v }))]}
+                                                onChange={val => setVersionFilters({ ...versionFilters, loader: val })}
+                                            />
                                         </div>
                                         <div>
                                             <label className="block mb-2 text-sm font-medium text-neutral-300">Type</label>
-                                            <CustomSelect value={versionFilters.type} onChange={e => setVersionFilters({ ...versionFilters, type: e.target.value })}>
-                                                <option value="">All Types</option>
-                                                <option value="release">Release</option>
-                                                <option value="beta">Beta</option>
-                                                <option value="alpha">Alpha</option>
-                                            </CustomSelect>
+                                            <PremiumDropdown
+                                                value={versionFilters.type}
+                                                options={[
+                                                    { id: '', name: 'All Types' },
+                                                    { id: 'release', name: 'Release' },
+                                                    { id: 'beta', name: 'Beta' },
+                                                    { id: 'alpha', name: 'Alpha' }
+                                                ]}
+                                                onChange={val => setVersionFilters({ ...versionFilters, type: val })}
+                                            />
                                         </div>
                                     </div>
                                 </div>
