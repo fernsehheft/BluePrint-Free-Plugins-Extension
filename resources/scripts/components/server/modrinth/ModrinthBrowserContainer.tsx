@@ -64,7 +64,7 @@ const DropdownButton = styled.button`
 `;
 
 const DropdownContent = styled.div`
-    ${tw`absolute z-50 w-full mt-2 rounded-lg overflow-hidden border border-white/10 shadow-2xl`};
+    ${tw`absolute z-40 w-full mt-2 rounded-lg overflow-hidden border border-white/10 shadow-2xl`};
     background: rgba(17, 24, 39, 0.95);
     backdrop-filter: blur(12px);
     max-height: 250px;
@@ -111,7 +111,7 @@ const PremiumDropdown = ({ value, options, onChange, placeholder = 'Select...' }
     }, []);
 
     return (
-        <DropdownWrapper ref={dropdownRef} style={{ zIndex: isOpen ? 100 : 1 }}>
+        <DropdownWrapper ref={dropdownRef} style={{ zIndex: isOpen ? 40 : undefined }}>
             <DropdownButton type="button" onClick={() => setIsOpen(!isOpen)}>
                 <span className={activeOption ? 'text-white' : 'text-neutral-500'}>
                     {activeOption ? activeOption.name : placeholder}
@@ -518,7 +518,7 @@ export default () => {
 
                 {/* Filters */}
                 {showFilters && (
-                    <GlassPanel className="animate-fade-in-down relative z-20">
+                    <GlassPanel className="animate-fade-in-down relative z-10">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <label className="block mb-2 text-sm font-medium text-neutral-300">Category</label>
@@ -602,7 +602,7 @@ export default () => {
 
                 {/* Version Modal */}
                 {selectedPlugin && (
-                    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+                    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-40 overflow-y-auto">
                         <GlassPanel className="max-w-4xl w-full max-h-[85vh] flex flex-col !mb-0 !p-0 overflow-hidden">
                             <div className="p-6 border-b border-neutral-700/50 flex justify-between items-center bg-neutral-900/50">
                                 <div>
