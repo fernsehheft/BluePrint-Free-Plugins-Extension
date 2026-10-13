@@ -179,7 +179,7 @@ const spigotCategories = [
 ];
 
 const loadersList = [
-    'paper', 'purpur', 'spigot', 'bukkit', 'folia', 'velocity', 'waterfall', 'bungeecord'
+    'paper', 'purpur', 'spigot', 'bukkit', 'folia', 'sponge', 'velocity', 'waterfall', 'bungeecord', 'geyser'
 ];
 
 interface UnifiedPlugin {
@@ -344,13 +344,13 @@ export default () => {
 
     useEffect(() => {
         debouncedSearch(query);
+        return () => debouncedSearch.cancel();
     }, [query, filters, platform]);
 
-    useEffect(() => {
-        if (page > 0) {
-            searchPlugins(query, page * 12);
-        }
-    }, [page]);
+    const goToPage = (newPage: number) => {
+        setPage(newPage);
+        searchPlugins(query, newPage * 12);
+    };
 
     useEffect(() => {
         setFilters({ category: '', loader: '', sort: 'relevance' });
@@ -593,9 +593,9 @@ export default () => {
 
                         {/* Pagination */}
                         <div className="flex justify-center gap-2">
-                            <button disabled={page === 0} onClick={() => setPage(page - 1)} className="px-4 py-2 bg-neutral-800 text-neutral-300 rounded-lg disabled:opacity-50">Prev</button>
+                            <button disabled={page === 0} onClick={() => goToPage(page - 1)} className="px-4 py-2 bg-neutral-800 text-neutral-300 rounded-lg disabled:opacity-50">Prev</button>
                             <span className="px-4 py-2 text-neutral-400">Page {page + 1}</span>
-                            <button disabled={(page + 1) * 12 >= totalHits} onClick={() => setPage(page + 1)} className="px-4 py-2 bg-neutral-800 text-neutral-300 rounded-lg disabled:opacity-50">Next</button>
+                            <button disabled={(page + 1) * 12 >= totalHits} onClick={() => goToPage(page + 1)} className="px-4 py-2 bg-neutral-800 text-neutral-300 rounded-lg disabled:opacity-50">Next</button>
                         </div>
                     </>
                 )}
