@@ -2,8 +2,8 @@ info:
   name: "Modrinth Browser"
   identifier: "modrinthbrowser"
   description: "Browse and download Modrinth plugins directly from the server panel."
-  version: "1.2.2"
-  target: "beta-2026-01"
+  version: "1.2.3"
+  target: "beta-2026-08"
   author: "fernsehheft"
   icon: 'resources/icon.png'
   website: ''

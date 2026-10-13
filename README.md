@@ -25,19 +25,19 @@ The extension uses the usual Blueprint project structure:
 ModrinthBrowser/
 ├── conf.yml
 ├── app/
-│   └── Http/
-│       └── Controllers/
-│           └── Extensions/
-│               └── ModrinthBrowser/
-│                   └── PluginController.php
+│   └── PluginController.php
 ├── resources/
+│   ├── icon.png
+│   ├── views/
+│   │   └── view.blade.php
 │   └── scripts/
 │       └── components/
+│           ├── Components.yml
 │           └── server/
 │               └── modrinth/
 │                   └── ModrinthBrowserContainer.tsx
 └── routes/
-    └── server.php
+    └── web.php
 ```
 
 ### Quick Overview:
@@ -45,7 +45,7 @@ ModrinthBrowser/
 * `conf.yml`: Extension metadata & config
 * `PluginController.php`: Handles download & validation
 * `ModrinthBrowserContainer.tsx`: UI code (React)
-* `server.php`: Blueprint routes
+* `web.php`: Blueprint routes
 
 ---
 
@@ -54,7 +54,7 @@ ModrinthBrowser/
 To get this extension running, you'll need:
 
 * The Pterodactyl Panel with Blueprint support
-* Blueprint installed
+* Blueprint installed (built for `beta-2026-08`, which requires Node.js 22+)
 * PHP 8 or newer
 * Outbound network access to:
   * `api.modrinth.com`
@@ -166,7 +166,7 @@ It’s all React + Tailwind, talking to the backend and Modrinth’s API.
 
 This is the controller doing the heavy lifting:
 ```
-app/Http/Controllers/Extensions/ModrinthBrowser/PluginController.php
+app/PluginController.php
 ```
 It:
 * Checks and validates requests
@@ -177,8 +177,8 @@ It:
 ### Security
 
 * Enforces `file.create` permission checks.
-* Validates all project/version IDs.
-* Prevents directory traversal attacks.
+* Only downloads from trusted hosts (`cdn.modrinth.com`, `api.spiget.org`).
+* Sanitizes file names to prevent directory traversal attacks.
 * Uses Pterodactyl’s built-in storage APIs.
 
 ---
